@@ -33,7 +33,7 @@ Options(default):\n\
 	-o: prefix of out put file(out)\n\
 	-h: help\n\
 	\n\
-Report bug to: lujianliang@genomics.org.cn\n\
+Report bug to: lujianliang@genomics.org.cn shanlin.liu@ioz.ac.cn\n\
 ";         //kmerul and kmerInterval don't illustrate yet
 	if (argc<2)
 	{
