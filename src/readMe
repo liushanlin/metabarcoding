@@ -1,0 +1,6 @@
+#max kmer coverage is 255 and just chose all of the last coverages
+multi pthread has been added
+multi kmer has been added     2012-7-30
+multi kmer of all ends        2012-9-18
+remove alignment part         2012-11-22
+kmer from big to small
