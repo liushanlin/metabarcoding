@@ -1,0 +1,98 @@
+#! /usr/bin/perl -w
+use strict;
+=head1 Description
+
+        Usage: perl extract.pl <parameter>
+
+        --fq1           "xx.1.fq compressed file should have a sufix of .gz"
+        --fq2           "xx.2.fq compressed file should have a sufix of .gz"
+        --pri           "primer set, format in "forward \t Seq \n reverse \t Seq \n";
+        --ind           "index file in format of "id\t sequence\t forward|reverse";
+        --out           "prefix of the output file | hifi by default"
+        --min           "minimum depth for clustered ends | 5 by default"
+        --cpu           "number of cpu | 10 by default"
+        --len           "expected length of the barcode | 658 by default"
+        --stp           "steps used in this run e.g. 1-6 by default"
+        --cln           "clean intermedia files or not 1/0, 1 by default"
+        --help          "print out this information"
+
+
+steps in the analysis include:
+
+    #1 demultiplex the input fastq 
+    #2 unique and cluster for each file 
+    #3 overlap for end files 
+    #4 cluster for overlapped end file 
+    #5 assemble 
+    #6 rename output  
+
+=cut
+
+use Getopt::Long;
+use FindBin qw($Bin $Script);
+use strict;
+
+my ($Fq1,$Fq2,$Pri,$Out,$Ind,$Min,$Cpu,$Len,$Stp,$Cln,$Help);
+
+GetOptions(
+        "fq1:s"=>\$Fq1,
+        "fq2:s"=>\$Fq2,
+        "out:s"=>\$Out,
+        "pri:s"=>\$Pri,
+        "ind:s"=>\$Ind,
+        "min:i"=>\$Min,
+        "cpu:i"=>\$Cpu,
+        "len:i"=>\$Len,
+        "stp:s"=>\$Stp,
+        "cln:i"=>\$Cln,
+        "help"=>\$Help
+);
+
+die `pod2text $0` if ($Help || !defined ($Fq1) || !defined ($Fq2)|| !defined ($Pri) || !defined ($Ind));
+
+$Out ||= "hifi";
+$Min ||= 5;
+$Cpu ||= 10;
+$Len ||= 658;
+$Stp ||= "1-6";
+$Cln=1 unless (defined $Cln);
+
+my ($startRun, $endRun) = (split /-/, $Stp)[0,1];
+
+die "step option is not correctly set\n" unless ($startRun <= $endRun and $endRun < 7 and $startRun >= 1);
+
+for my $i ($startRun..$endRun){
+
+if ($i == 1){
+    `perl $Bin/bin/1_demultiplex.pl -fq1 $Fq1 -fq2 $Fq2 -pri $Pri -ind $Ind -out $Out`;
+    print "step 1 finished\n";
+}
+
+if ($i == 2){
+    `perl $Bin/bin/2_uniqu_sort_cluster.Pro.pl $Out`;
+    print "step 2 finished\n";
+}
+
+if ($i == 3){
+    `perl $Bin/bin/3_sep_extract_overlap.pl $Out $Fq1 $Fq2`;
+    print "step 3 finished\n";
+}
+
+if ($i == 4){
+    `perl $Bin/bin/4_cluster_fromend.pl $Out $Min`;
+    print "step 4 finished\n";
+}
+
+if ($i == 5){
+    `perl $Bin/bin/5_forgap_filling.pl $Out $Cpu`;
+    print "step 5 finished\n";
+}
+
+if ($i == 6){
+    `perl $Bin/bin/6_rename_kmer.pl $Out $Len $Cln`;
+    print "step 6 finished\n";
+}
+
+}
+
+print "all done\n";
