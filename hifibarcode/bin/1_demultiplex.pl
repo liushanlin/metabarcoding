@@ -199,6 +199,9 @@ TNT:while(my $t1=<FFQ>){
     chomp (my $seqr=<RFQ>);
     <RFQ>;
     <RFQ>;
+    my $seqLenf = length $seqf;
+    my $seqLenr = length $seqr;
+    next TNT unless ($seqLenf == $seqLenr and $seqLenr == 150);
     my ($pmf, $dirf, $posf) = &kmerMatch($seqf);
     my ($pmr, $dirr, $posr) = &kmerMatch($seqr);
     if ($pmf == 0 and $pmr == 0){
