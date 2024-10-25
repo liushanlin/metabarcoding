@@ -63,6 +63,7 @@ for my $key (keys %seqs){
     foreach my $ele (@matches){
         next if ($ele eq "0-0" or $ele eq "1-1");
         my ($fi, $ri) = (split /\-/, $ele)[0,1];
+	next unless (defined $fi and defined $ri);
         next unless (defined $seqs{$key} -> [$fi][0] and defined $seqs{$key} -> [$ri][1]);
         my $sfa = $seqs{$key} -> [$fi][0];
         my $sra = $seqs{$key} -> [$ri][1];
@@ -77,15 +78,29 @@ close OUT;
 close DEP;
 
 open (MIDLIS,">","$pre\_mid.lis") || die $!;
-print MIDLIS ">\nf=$pre\_midMerged.fa\n";
+print MIDLIS ">\nf=$pre\_midMerged_filtered.fa\n";
 close MIDLIS;
 
 unless ((-e "$pre\_midMerged.fa") or (-z "$pre\_midMerged.fa")){
     `$Bin/cmr -a $pre\_mid_1.fasta  -b $pre\_mid_2.fasta  -o $pre\_midMerged.fa -2 $pre\_midFail.1 -3 $pre\.midFail.2 -l 15 -u 120 -c 0.95 -m 0`;
 }
 
-`$Bin/barcode -e $pre\_ends.fasta -r $pre\_mid.lis -o $pre\_barcode -x 350 -n 200 -l 119 -v 8 -k 127 -t $cpu`;
+open (MIDSEQ,">","$pre\_midMerged_filtered.fa") || die $!;
+$/="\>";
+open IN, "<$pre\_midMerged.fa" or die $!;
+while(<IN>){
+	chomp;
+ 	next if ($_ eq "");
+	my ($id, $seq) = (split /\n/, $_, 2)[0,1];	
+	$seq=~s/\n//g;
+ 	my $len = length $seq;
+  	next unless ($len >= 150);
+   	print MIDSEQ ">$_";
+}
+close IN;
+close MIDSEQ;
 
+`$Bin/barcode -e $pre\_ends.fasta -r $pre\_mid.lis -o $pre\_barcode -x 350 -n 200 -l 119 -v 8 -k 127 -t $cpu`;
 
 sub match {
     my ($f,$r) = @_;
