@@ -63,7 +63,7 @@ for my $key (keys %seqs){
     foreach my $ele (@matches){
         next if ($ele eq "0-0" or $ele eq "1-1");
         my ($fi, $ri) = (split /\-/, $ele)[0,1];
-        next unless (defined $fi and defined $ri);
+        next unless (defined $seqs{$key} -> [$fi][0] and defined $seqs{$key} -> [$ri][1]);
         my $sfa = $seqs{$key} -> [$fi][0];
         my $sra = $seqs{$key} -> [$ri][1];
         my $dfa = $deps{$key} -> [$fi][0];
