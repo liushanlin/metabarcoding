@@ -67,8 +67,10 @@ for my $key (keys %seqs){
  	my $fi = $orders[$fii];
   	my $ri = $orders[$rii];
    	my $com = "$fi\-$ri";
+	next if ($fi > 2 or $ri >2);
     	next if ($com eq "0-0" or $com eq "1-1");
         next unless (defined $seqs{$key} -> [$fi][0] and defined $seqs{$key} -> [$ri][1]);
+	next unless (defined $deps{$key} -> [$fi][0] and defined $deps{$key} -> [$ri][1]);
         my $sfa = $seqs{$key} -> [$fi][0];
         my $sra = $seqs{$key} -> [$ri][1];
         my $dfa = $deps{$key} -> [$fi][0];
