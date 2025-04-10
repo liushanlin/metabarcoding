@@ -8,6 +8,7 @@ use strict;
         --fq2           "xx.2.fq"
         --pri           "primer set, format in "forward \t Seq \n reverse \t Seq \n";
         --ind           "index file in format of "id\t sequence\t forward|reverse";
+        --max            ""maximum bp trimmed from 5' end | 1 by default";
         --out           "prefix of the output file"
         --help          "print out this information"
 
@@ -18,7 +19,7 @@ use FindBin qw($Bin $Script);
 use strict;
 
 
-my ($Fq1,$Fq2,$Pri,$Out,$Ind,$Help);
+my ($Fq1,$Fq2,$Pri,$Out,$Ind,$MaxT,$Help);
 
 my%primer=(
         "V" => "(A|C|G)",
@@ -40,10 +41,15 @@ GetOptions(
         "out:s"=>\$Out,
         "pri:s"=>\$Pri,
         "ind:s"=>\$Ind,
+        "max=i"=>\$MaxT,
         "help"=>\$Help
 );
 
 die `pod2text $0` if ($Help || !defined ($Fq1) || !defined ($Fq2)|| !defined ($Pri) || !defined ($Ind));
+
+unless (defined $MaxT){
+        $MaxT = 1;
+}
 
 if ($Fq1=~/gz$/){
     open (FFQ, "gzip -dc $Fq1 |") || die $!;
@@ -304,6 +310,10 @@ sub misRev {
                         my $idx=sprintf "$f$b$r";
                         push @set,$idx;
                 }
+        }
+        for my $i (1..$MaxT){
+                my $trims = substr $s, $i;
+                push @set, $trims;
         }
         return @set;
 }
